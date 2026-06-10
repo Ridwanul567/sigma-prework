@@ -6,6 +6,7 @@
 import time
 import random
 from rich import print
+from rich.console import Console
 
 
 class Player:
@@ -35,6 +36,7 @@ class Trivia:
     def __init__(self):
         self.parameters = 0
         self._solo_mode = False
+        self._full_intsruct = 0
         self._categories = ['P', 'W', 'O', 'A', 'N']
         self._category_values = {'P': [], 'W': [], 'O': [], 'A': [], 'N': []}
         self._category_score = {'P': 0, 'W': 0, 'O': 0, 'A': 0, 'N': 0}
@@ -45,51 +47,87 @@ class Trivia:
         self._category = ''
         self._hints = {}
         self._turn_time = 30
+        self._console = Console(width=50)
+        self._icons = ["hamster_face", "speak_no_evil",
+                       "frog", "fox_face", "tiger", "lion_face", "horse"]
 
     def set_max_rounds(self, n):
         self._round_max = n
 
     def return_max_rounds(self):
-        return f"Total number of rounds: {self._round_max}"
+        return self._round_max
 
     def set_turn_time(self, n):
         self._turn_time = n
 
     def return_turn_time(self):
-        return f"Time for a player's turn: {self._turn_time} seconds"
+        return self._turn_time
 
     def intro(self):
         """Introduction"""
+        self._console.clear()
+        self._console.rule("[bold purple]:star: Trivia Star :star:[/]")
         print(
-            "[bold red]Welcome :grinning:![/] I hope you are ready to play my variant of the hit-game [bold purple]Articulate[/]!")
+            "[bold green3]Welcome :grinning:![/] I hope you are ready to play my variant of the hit-game [bold purple]Articulate[/].")
         print(
-            "The aim of the game is to reach as high a [bold green]score[/] as possible.")
+            "The aim of the [bold purple]game[/] is to reach as high a [bold green4]score[/] as possible.")
         print(
-            "You have only [blue]1[/] hint for each word but, you get unlimited [bold yellow]skips[/] as well.")
+            "You have only [blue1]1[/] hint for each word but, you get unlimited [bold yellow]skips[/] as well.")
         print("Try your best to succeed!")
 
     def start(self):
         """Asks whether the players would like full instructions."""
         print(
-            "\nPlease enter [blue]1[/] if you want full instructions on how to play the game (recommended if you have not played before) or enter [blue]0[/] to start: ")
+            "\nPlease enter [blue1]1[/] if you want full instructions on how to play the [bold purple]game[/] (recommended if you have not played before)")
+        print("or enter [blue1]0[/] to start immediately: ", end="")
         want_full_instruct = input()
-        want_full_instruct = int(want_full_instruct)
-        return want_full_instruct
+        self._full_instruct = int(want_full_instruct)
 
     def full_instructions(self):
         """Full instructions on how to play the game."""
-        print("...")
+        if self._full_instruct == 1:
+            self._console.clear()
+            self._console.rule(":book: Instructions :book:")
+            print(
+                "To win :star: [bold purple]Trivia Star[/] :star: , you solely need to answer as many questions correctly as fast as possible.")
+            print("There are [bold blue1]5[/] [bold yellow]categories[/]:")
+            print(
+                "[italic]- [red]Person[/]    - [blue3]World[/]    - [blue]Object[/]    - [magenta3]Action[/]   - [dark_green]Nature[/]")
+            print(
+                "The first [bold yellow]category[/] is always [italic red]Person[/]. For each correct answer to a hint, a point is added to the player's score.")
+            print("Once the round ends, the player changes to the next category that is their respective score ahead.")
+            print(
+                "For example, in the first round, if a player scores [blue1]2[/] points, the category for that player's next round would be [italic blue]Object[/].")
+            print(
+                f"There are [blue1]{self.return_max_rounds()}[/] rounds and each round lasts [blue1]{self.return_turn_time()}[/] seconds. These are adjustable in [bold purple]Options[/].")
+            print(
+                "After all of the rounds, the [bold blue1]player[/] with the highest [bold green4]score[/] is the [bold orange1]winner[/].")
+            print(
+                "Ready to play the [bold purple]game[/]? ([bold green4]Yes[/]/[bold red]No[/])")
+            answer = input().lower()
+            while answer != "yes":
+                exit = self.exit_program()
+                if exit == -1:
+                    return -1
+                time.sleep(10)
+                print(
+                    "Ready to play the [bold purple]game[/]? ([bold green4]Yes[/]/[bold red]No[/])")
+                answer = input().lower()
+        else:
+            return None
 
     def number_of_players(self):
+        self._console.clear()
+        print("Let us start the [bold purple]game[/].")
         """Sets number of players."""
-        print("Enter [bold green]number[/] of [bold red]players[/]: ", end="")
+        print("Enter [bold green4]number[/] of [bold blue1]players[/]: ", end="")
         self._player_no = int(input())
         if self._player_no == 1:
             self._solo_mode = True
 
     def load_data(self):
         """Loads all hints and answers for each category."""
-        self._hints = {'P': {1: "British :flag_for_united_kingdom:  Prime Minister from 1940-1945 and again from 1951-1955, most famous for successfully leading Britain out of World War II",
+        self._hints = {'P': {1: "British Prime Minister from 1940-1945 and again from 1951-1955, most famous for successfully leading Britain out of World War II",
                              2: "Famous Hero in Greek Mythology, killed the monstrous Lernaean Hydra and ascended Mount Olympus",
                              3: "Orange Tabby cat who loves to eat lasagna",
                              4: "Wife of arguably the dumbest man in Springfields, iconic for her sky-high beehive blue hair",
@@ -99,7 +137,16 @@ class Trivia:
                              8: "German Philosopher; founder of one of the most famous idealogies against capitalism",
                              9: "German Physicist; famous for his theories of relativity and E = mc2",
                              10: "English Physicist and Mathematician; He saw an apple fall onto the ground",
-                             11: "A wooden-doll turned human boy whose nose grows longer for every lie he tells"
+                             11: "A wooden-doll turned human boy whose nose grows longer for every lie he tells",
+                             12: "16th President of the USA; Played a Major role in abolishing slavery",
+                             13: "English Physicist; Known for showing the wonders of our universe via BBC documentaries",
+                             14: "British Prime Minister who resigned after the Brexit Referendum",
+                             15: "A village of small, blue creatures who are distinguished by their unique roles",
+                             16: "English Biologist; Widely known for his contributions to evolution theory",
+                             17: "Ancient Greek Philosopher; The teacher of Plato who has no writing to his name",
+                             18: "The talking dog in a group who solve mysteries",
+                             19: "Man of Steel; The world's first modern superhero",
+                             20: "The football forward with the number 7; One of the goats of the sport"
                              },
                        'W': {1: "America's largest manufacturer of ketchup, with an overall market share of more than 50%; founded in Pittsburgh",
                              2: "Capital of the Czech Republic; Surrounded by Germany, Poland, Slovakia and Austria; known for Charles Bridge, one of the largest castles in the world",
@@ -110,8 +157,18 @@ class Trivia:
                              7: "The heart of the American film industry in LA, California",
                              8: "The capital of the UK, a financial hub with rich history",
                              9: "An independent city-state, serving as the global headquarters of the Roman Catholic Church",
-                             10: "One of the most famous streets in the world where the decisions made on this street affect the global economy"
-                             },
+                             10: "One of the most famous streets in the world where the decisions made on this street affect the global economy",
+                             11: "A country known for the wildest creatures in its diverse landscape",
+                             12: "Resembling a shard of broken glass, it is the tallest building in Western Europe",
+                             13: "The deepest oceanic trench on Earth",
+                             14: "A city known for its beaches and nightlife, situated on the South-Eastern coast of the USA",
+                             15: "The iconic river of the UK which stretches through London, Oxford and even Windsor",
+                             16: "An active volcano, it is a cultural symbol of Japan",
+                             17: "A 4.5 billion years old object, symbolic across the entirety of humanity",
+                             18: "The largest river in the world by water-volume, it nourishes the most biodiverse ecosystem",
+                             19: "The largest sports venue in the UK, hosting games for England's national football team",
+                             20: "The Pearl of the Indian Ocean, known for harvesting world-class tea",
+                             21: "The city that bridges Europe and Asia, rich in imperial history with iconic landmarks"},
                        'O': {1: "Musical instrument with black and white keys",
                              2: "Small shelter for sleeping when camping",
                              3: "A place to bake a cake or roast a turkey",
@@ -122,7 +179,16 @@ class Trivia:
                              8: "The flexible appendage at the rear of animal not present in humans",
                              9: "A chart used to track the days and months across a year",
                              10: "A metal percussion instrument that is bended into a particular shape",
-                             11: "A thick rubber ring that surrounds the wheels of a vehicle"
+                             11: "A thick rubber ring that surrounds the wheels of a vehicle",
+                             12: "A large, round wooden container used for storage and typically aging beverages",
+                             13: "A heavy, metal tool used as a surface for hammering, shaping or cutting metal",
+                             14: "One of humanity's oldest weapons with a long shaft and sharpened head",
+                             15: "An educational institution for young children",
+                             16: "A high-ranking church typically substantiated by its size and architectural style",
+                             17: "Sweet, white, tightly-packed blocks used for sweetening beverages",
+                             18: "A dedicated table or platform used for ritualistic practices",
+                             19: "A small, round and flat object used as legal tender with special markings to indicate so",
+                             20: "Grilled/Roasted meat originating from Central Asia but prevalent all across Europe"
                              },
                        'A': {1: "This is an activity where you use either a piece of machinery or a needle and thread kit to weave together a type of textile or fabric",
                              2: "Faster than walking, slower than running",
@@ -134,6 +200,16 @@ class Trivia:
                              8: "Removing material from a surface possibly the leftovers in a pot",
                              9: "Gathering close together as a group, sharing warmth and protecting one another",
                              10: "The unintentional lose of saliva from the mouth possibly when daydreaming",
+                             11: "Making enthusiastic sounds to encourage somebody, frequently done in sport events",
+                             12: "Small, involuntary contractions of muscle possible in the eyelid, thumb or calf",
+                             13: "Rubbing a surface to make it smooth and defect-free",
+                             14: "The fastest movement that a horse can be doing",
+                             15: "A mathematical operation in which groups of equal size are combined",
+                             16: "A dull, continuous physical pain; it can be a persistent discomfort",
+                             17: "Telling a story by embodying the characters in the story and using one's body to convey said story",
+                             18: "A person who has legal access to money or assets using it for their own personal use",
+                             19: "Adjusting to a new environment, climate or situation",
+                             20: "When something is coming to an end relevant when considering buying milk at the supermarket"
                              },
                        'N': {1: "The largest and heaviest bird that live in Australia",
                              2: "Tadpoles grow into these hopping creatures",
@@ -145,6 +221,16 @@ class Trivia:
                              8: "A venomous, slithery creature that alert predators with a shake of their tail",
                              9: "A baby version of a cow",
                              10: "A small organism that drifts in the water, eaten by creatures as small as krill to as large as whales",
+                             11: "A leafy vegetable that can appear green/red/white; it can be eaten in a variety of ways and is rich in Vitamin C and K",
+                             12: "A fully mature, male deer",
+                             13: "A fish with razor-sharp teeth, native to South American rivers",
+                             14: "An organism that survives off another organism's body, feeding off that organism's nutrients",
+                             15: "A small, oval fruit native to the Mediterranean; it is a staple of the cuisine and commonly pressed into oil",
+                             16: "A classification of animals that typically feed their young via milk; examples include humans, elephants and rats",
+                             17: "A creature that can be very easily be mistaken for a branch of a tree",
+                             18: "A mythical white horse with a single spiral horn protruding out of its head",
+                             19: "A beloved insect which spreads pollen across flowers and produces honey from the nectar of those flowers",
+                             20: "A kingdom classification of organisms that are closer to animals than plants"
                              }}
 
         self._answers = {'P': {1: "winston churchill",
@@ -157,7 +243,16 @@ class Trivia:
                                8: "karl marx",
                                9: "albert einstein",
                                10: "isaac newton",
-                               11: "pinocchio"},
+                               11: "pinocchio",
+                               12: "abraham lincoln",
+                               13: "brian cox",
+                               14: "david cameron",
+                               15: "smurfs",
+                               16: "charles darwin",
+                               17: "socrates",
+                               18: "scooby doo",
+                               19: "superman",
+                               20: "cristiano ronaldo"},
                          'W': {1: "heinz",
                                2: "prague",
                                3: "eiffel tower",
@@ -167,7 +262,18 @@ class Trivia:
                                7: "hollywood",
                                8: "london",
                                9: "vatican city",
-                               10: "wall street"},
+                               10: "wall street",
+                               11: "australia",
+                               12: "shard",
+                               13: "mariana trench",
+                               14: "miami",
+                               15: "river thames",
+                               16: "mount fuji",
+                               17: "moon",
+                               18: "amazon river",
+                               19: "wembley stadium",
+                               20: "sri lanka",
+                               21: "istanbul"},
                          'O': {1: "piano",
                                2: "tent",
                                3: "oven",
@@ -178,8 +284,16 @@ class Trivia:
                                8: "tail",
                                9: "calendar",
                                10: "triangle",
-                               11: "tyre"
-                               },
+                               11: "tyre",
+                               12: "barrel",
+                               13: "anvil",
+                               14: "spear",
+                               15: "nursery",
+                               16: "cathedral",
+                               17: "sugar cube",
+                               18: "altar",
+                               19: "coin",
+                               20: "kebab"},
                          'A': {1: "sewing",
                                2: "jogging",
                                3: "foraging",
@@ -189,8 +303,17 @@ class Trivia:
                                7: "illuminating",
                                8: "scraping",
                                9: "huddling",
-                               10: "drooling"
-                               },
+                               10: "drooling",
+                               11: "cheering",
+                               12: "twitching",
+                               13: "polishing",
+                               14: "galloping",
+                               15: "multiplying",
+                               16: "aching",
+                               17: "acting",
+                               18: "embezzling",
+                               19: "acclimatising",
+                               20: "expiring"},
                          'N': {1: "ostrich",
                                2: "frog",
                                3: "rose",
@@ -200,8 +323,17 @@ class Trivia:
                                7: "barnacle",
                                8: "rattlesnake",
                                9: "calf",
-                               10: "plankton"
-                               }}
+                               10: "plankton",
+                               11: "cabbage",
+                               12: "stag",
+                               13: "piranha",
+                               14: "parasite",
+                               15: "olive",
+                               16: "mammal",
+                               17: "stick insect",
+                               18: "unicorn",
+                               19: "bee",
+                               20: "fungi"}}
 
         self._category_values['P'] = list(
             range(1, len(self._answers['P'])+1, 1))
@@ -220,14 +352,14 @@ class Trivia:
         names = []
         while i < self._player_no:
             print(
-                f"Enter [bold red]Player[/] [bold blue]{i+1}[/]'s [bold green]name[/]: ", end=" ")
+                f"Enter [bold red]Player[/] [bold blue1]{i+1}[/]'s [bold green4]name[/]: ", end=" ")
             name = input()
             for used_name in names:
                 while name == used_name:
                     print(
-                        "This [bold green]name[/] is already used. Please use another [bold green]name[/].")
+                        "This [bold green4]name[/] is already used. Please use another [bold green4]name[/].")
                     print(
-                        f"Enter [bold red]Player[/] [bold blue]{i+1}[/]'s [bold green]name[/]: ", end=" ")
+                        f"Enter [bold red]Player[/] [bold blue1]{i+1}[/]'s [bold green4]name[/]: ", end=" ")
                     name = input()
             player = Player(name)
             self._players.append(player)
@@ -237,15 +369,15 @@ class Trivia:
     def return_category(self, category):
         """Returns the category name for a chosen category."""
         if category == 'P':
-            return "Person"
+            return "[italic red]Person[/]"
         elif category == 'W':
-            return "World"
+            return "[italic blue3]World[/]"
         elif category == 'O':
-            return "Object"
+            return "[italic blue]Object[/]"
         elif category == 'A':
-            return "Action"
+            return "[italic magenta3]Action[/]"
         else:
-            return "Nature"
+            return "[italic dark_green]Nature[/]"
 
     def add_category_score(self, category, n):
         """Adds to the total number of correct answers in a chosen category."""
@@ -302,12 +434,12 @@ class Trivia:
                 return add_score
             hint_index = random.choice(self._category_values[self._category])
             hint = self._hints[self._category][hint_index]
-            print(hint)
-            print("[bold green]Word[/]: ", end="")
+            self._console.print(f"\n[orange1]{hint}[/]", justify='center')
+            print("\n[bold green4]Word[/]: ", end="")
             guess = input()
             guess = guess.lower()
             if guess == "skip":
-                print("[bold green]Word[/] [bold yellow]skipped[/].")
+                print("[bold green4]Word[/] [bold yellow]skipped[/].")
             elif guess == "!exit":
                 return -1
             else:
@@ -327,12 +459,12 @@ class Trivia:
                     guess = guess.lower()
                     check = self.guess_analyser(guess, answer)
                     if guess == "skip":
-                        print("[bold green]Word[/] [bold yellow]skipped[/].")
+                        print("[bold green4]Word[/] [bold yellow]skipped[/].")
                         break
                     elif guess == "!exit":
                         return -1
                 if check == True:
-                    print("[bold green]Correct![/]")
+                    print("[bold green4]Correct![/]")
                     add_score += 1
                     self._category_values[self._category].remove(hint_index)
                     # self._category_values[self._category] = np.delete(
@@ -347,23 +479,24 @@ class Trivia:
 
     def score_comparison(self, n):
         """Presents the current scores across every player."""
-        print("\nThe current [bold green]scores[/] are,")
+        print("\nThe current [bold green4]scores[/] are,")
         for player in self._players:
             print(
-                f"[bold green]{player.return_name()}[/]: [bold blue]{player.return_score()}[/]")
+                f"[bold green4]{player.return_name()}[/]: [bold blue1]{player.return_score()}[/]")
 
     def winner(self):
         """Called after the final round.
             Shows the final scores across every player and congratulates the winner."""
-        print("\nThe game is now over.")
-        print(
-            "Each [bold green]players'[/] [bold purple]final[/] [bold green]scores[/] are now,")
+        self._console.clear()
+        self._console.rule("[bold purple]:stop_sign: GAME OVER :stop_sign:[/]")
+        self._console.print(
+            "\n[bold green4]Player Scores[/]", justify='center')
         time.sleep(0.1)
         print(".")
         time.sleep(0.2)
-        print("..")
-        time.sleep(0.4)
         print("...")
+        time.sleep(0.4)
+        print(".....")
         time.sleep(0.5)
         player_names = []
         player_scores = []
@@ -374,28 +507,26 @@ class Trivia:
         scores_names = sorted(scores_names)
         tie_index = []
         for i, score_name in enumerate(scores_names):
-            print(
-                f"[bold green]Player[/]: {score_name[1]} - [bold purple]Final[/] [bold green]Score[/]: [bold blue]{score_name[0]}[/]")
+            self._console.print(
+                f"[bold green4]Player[/]: {score_name[1]} - [bold purple]Final[/] [bold green4]Score[/]: [bold blue1]{score_name[0]}[/]", justify='center')
             if score_name[0] == scores_names[self._player_no-1][0]:
                 tie_index.append(i)
         if len(tie_index) > 1:
-            print(f"\nWow, we have a {len(tie_index)}-way tie!")
-            print(f"The [bold yellow]winners[/] are: ", end="")
+            self._console.print(
+                f"\n\nWow, we have a {len(tie_index)}-way tie!", justify='center')
+            self._console.print(
+                f"The [bold orange1]winners[/] are:\n", justify='center')
             for player_no in tie_index:
-                if player_no == self._player_no - 1:
-                    print(
-                        f"[bold green]{scores_names[player_no][1]}[/]. [bold yellow]Congratulations![/]")
-                else:
-                    print(
-                        f"[bold green]{scores_names[player_no][1]}[/], ", end="")
+                self._console.print(
+                    f"[bold orange1]{scores_names[player_no][1]}[/]", justify='center')
         else:
-            print(
-                f"[bold yellow]Congratulations[/], [bold green]{scores_names[self._player_no-1][1]}[/]! You are the [bold yellow]winner[/].")
+            self._console.print(
+                f"[bold orange1]Congratulations[/], [bold orange1]{scores_names[self._player_no-1][1]}[/]! You are the [bold orange1]winner[/].", justify='center')
 
     def exit_program(self):
         """Asks after a round whether the players would to stop playing."""
         print(
-            "Would you like to stop the game? ([bold green]Yes[/]/[bold red]No[/]) ", end="")
+            "Would you like to stop the [bold purple]game[/]? ([bold green4]Yes[/]/[bold red]No[/]) ", end="")
         exit = input()
         exit = exit.lower()
         if exit == "yes":
@@ -405,7 +536,7 @@ class Trivia:
         else:
             print("That was an [bold red]invalid[/] answer.")
             print(
-                "Please, enter [bold red]No[/] if you would like to continue the game otherwise you will be [bold purple]force[/] exited.")
+                "Please, enter [bold red]No[/] if you would like to continue the [bold purple]game[/] otherwise you will be [bold purple]force[/] exited.")
             exit = input()
             exit.lower()
             if exit == "no":
@@ -415,23 +546,26 @@ class Trivia:
 
     def game(self):
         """Runs each round of the game while tracking scores and the hints that have been used."""
-        print("Let us [bold green]start[/] the [bold purple]game[/].")
-        self.number_of_players()
-        self.players_init()
-        self.load_data()
         time.sleep(1.5)
+        print(
+            "If you want to ever exit the program, please enter command [bold red]!exit[/] to do so.")
         while self._round <= self._round_max:
             if (self._round) == self._round_max:
                 print("[bold purple]Final round![/]")
             else:
-                print(f"[bold green]Round {self._round}[/]")
+                print(f"[bold green4]Round {self._round}[/]")
             for i, player in enumerate(self._players):
-                print(f"[bold green]{player.return_name()}[/]'s turn")
+                if i > 0:
+                    print("Next Player!")
+                time.sleep(2)
+                self._console.clear()
+                self._console.rule(
+                    f"[bold blue1]:{self._icons[i]}: {player.return_name()}'s turn :{self._icons[i]}:[/]\n")
                 time.sleep(1)
                 self._category = self._categories[player.return_score() % 5]
                 print(
-                    f"The [bold yellow]category[/] is [bold yellow]{self.return_category(self._category)}[/].")
-                print("[bold green]First Word![/]")
+                    f"The [bold yellow]category[/] is {self.return_category(self._category)}.")
+                print("[bold green4]First Word![/]")
                 score = self.game_program(i)
                 if score == -1:
                     print("[bold purple]Program Exited.[/]")
@@ -441,10 +575,10 @@ class Trivia:
             if (self._round) == self._round_max:
                 print("[bold purple]Final round is over![/]")
             else:
-                print(f"[bold green]Round {self._round} is over.[/]")
+                print(f"[bold green4]Round {self._round} is over.[/]")
                 self.score_comparison(self._round)
                 print(
-                    "Ready for next round ([bold green]Yes[/]/[bold red]No[/])?", end=" ")
+                    "\nReady for next round ([bold green4]Yes[/]/[bold red]No[/])?", end=" ")
                 ready = input().lower()
                 while ready != "yes":
                     exit = self.exit_program()
@@ -453,7 +587,7 @@ class Trivia:
                         return None
                     time.sleep(10)
                     print(
-                        "Ready for next round ([bold green]Yes[/]/[bold red]No[/])?", end=" ")
+                        "Ready for next round ([bold green4]Yes[/]/[bold red]No[/])?", end=" ")
                     ready = input().lower()
             self._round += 1
         self.winner()
@@ -462,19 +596,28 @@ class Trivia:
         """Required to be called for the game to proceed."""
         self.intro()
         self.start()
+        check = self.full_instructions()
+        if check == -1:
+            print("[bold purple]Program Exited.[/]")
+            return None
+        self.number_of_players()
+        self.players_init()
+        self.load_data()
         self.game()
 
 
 Game = Trivia()
 
-Game.set_max_rounds(3)
-Game.set_turn_time(50)
+# Game.set_max_rounds(2)
+# Game.set_turn_time(10)
 Game.main()
 
 
-# Need to add docstrings / Clean code for better logic
+# Need to add docstrings / Clean code for better logic - Tick Partially
 # Randomise what words are called - Tick
-# Improve UI (so that not too much info)
-# Learn how to improve design on terminal
+# Improve UI (so that not too much info) - Tick
+# Learn how to improve design on terminal - Tick
 # Add Tie Option at end - Tick
 # Give help when part of word is mentioned e.g. Eiffel for Eiffel Tower - Tick
+# Create a Game Menu
+# Add more hints
